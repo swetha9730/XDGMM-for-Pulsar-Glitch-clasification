@@ -9,7 +9,7 @@ from scipy.stats import norm
 from xdgmm import XDGMM
 
 #importing data of the glitches where 1st column is dV/V while 2nd column is the error in dV/V in the order of 10^(-9)
-data = pd.read_excel('glitches.ods', engine='odf',header=None)
+data = pd.read_excel('data.ods', engine='odf',usecols = [3,4])
 data.columns = ['derv','err_derv']
 
 #changing all the values to float and sting values to NaN
@@ -18,7 +18,12 @@ data = data.apply(pd.to_numeric, errors='coerce')
 #dropping rows
 indexNames1 = data[(data['derv'] <= 0)].index
 data.drop(indexNames1 , inplace=True) 
+
+indexNames2 = data[(data['err_derv'] == 0)].index
+data.drop(indexNames2 , inplace=True) 
+
 data = data.dropna()
+print(data.info())
 
 #reallocating the arrays
 derv = data['derv']
@@ -71,5 +76,5 @@ plt.xticks(new_list)
 ax.tick_params(axis="x", labelsize=13) 
 ax.tick_params(axis="y", labelsize=13) 
 
-plt.savefig("AIC_BIC.pdf", format="pdf") 
+plt.savefig("AIC_BIC_updated.pdf", format="pdf") 
 plt.show()
