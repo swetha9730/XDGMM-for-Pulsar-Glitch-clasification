@@ -3,13 +3,12 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 import math
-from astroML.density_estimation import XDGMM
 from scipy.stats import norm
 
 from xdgmm import XDGMM
 
 #importing data of the glitches where 1st column is dV/V while 2nd column is the error in dV/V in the order of 10^(-9)
-data = pd.read_excel('glitches.ods', engine='odf',header=None)
+data = pd.read_excel('data.ods', engine='odf',usecols = [3,4])
 data.columns = ['derv','err_derv']
 
 #changing all the values to float and sting values to NaN
@@ -18,7 +17,12 @@ data = data.apply(pd.to_numeric, errors='coerce')
 #dropping rows
 indexNames1 = data[(data['derv'] <= 0)].index
 data.drop(indexNames1 , inplace=True) 
+
+indexNames2 = data[(data['err_derv'] == 0)].index
+data.drop(indexNames2 , inplace=True) 
+
 data = data.dropna()
+#print(data.info())
 
 #reallocating the arrays
 derv = data['derv']
@@ -59,8 +63,8 @@ xdgmm = xdgmm.fit(X, Xerr)
 mu1 = xdgmm.mu[0][0]
 mu2 = xdgmm.mu[1][0]
 
-c1 = xdgmm.V[0][0]
-c2 = xdgmm.V[1][0]
+c1 = xdgmm.V[0][0][0]
+c2 = xdgmm.V[1][0][0]
 
 w1 = xdgmm.weights[0]
 w2 = xdgmm.weights[1]
@@ -81,7 +85,7 @@ p2 = norm.pdf(x, mu2, std2)*w2
 #plotting
 fig, ax = plt.subplots(1, 1, figsize = (10,7))
 
-ax.hist((log_derv), density = True, bins = 20, histtype = 'step', color = 'darkgrey', lw = 3)
+ax.hist((log_derv), density = True, bins = 20, histtype = 'step', color = 'lightblue', lw = 3)
 ax.plot(x, p1, 'k', lw = 3)
 ax.plot(x, p2, 'r', lw = 3)
 ax.set_xlabel('Log(Δv/v)', fontsize = 17,fontweight='bold')
@@ -90,6 +94,22 @@ ax.set_ylabel('Density of glitches', fontsize = 17,fontweight='bold')
 ax.tick_params(axis="x", labelsize=13) 
 ax.tick_params(axis="y", labelsize=13) 
 #ax.grid()
-#plt.savefig("XD_fit.pdf", format="pdf") 
+#plt.savefig("XD_fit_updates.pdf", format="pdf") 
+#lt.axvline(-6.82279,color='b',lw = 2,linestyle='dashed')
+#print(mu1,std1,mu2,std2)
 
+"""
+#a = mu1 - 2*std1
+#b = mu2 + 2*std2
+#print (a,b)
+
+#common = 0
+
+for i in log_derv:
+    if i < a and i > b:
+        common += 1
+        print(common)
+
+print(common)
+"""
 plt.show()
